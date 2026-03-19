@@ -2,7 +2,6 @@
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "gunicorn -w 4 -b 0.0.0.0:5000 --timeout 120 --access-logfile - --error-logfile - backend_api:app"
 healthcheckPath = "/api/health"
-healthcheckTimeout = 30
+healthcheckTimeout = 45
 restartPolicyType = "on_failure"

@@ -399,14 +399,36 @@ def get_detection_summary():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-with app.app_context():
-    db.create_all()
+# ... [Keep all your imports and model classes at the top as they are] ...
 
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
+# ==================== API ROUTES ====================
+
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.utcnow().isoformat(),
+        'model': 'ADASCNNModel v2.1'
+    })
+
+# ... [Keep all your other @app.route functions here] ...
 
 @app.route('/', methods=['GET'])
 def serve_frontend():
-    from flask import send_from_directory
+    # Make sure index.html is in the same folder as this script
     return send_from_directory('.', 'index.html')
+
+# ==================== STARTUP LOGIC ====================
+
+# This MUST be outside the 'if' block so Gunicorn runs it on Railway
+with app.app_context():
+    try:
+        db.create_all()
+        print("Database initialized!")
+    except Exception as e:
+        print(f"Database error: {e}")
+
+if __name__ == '__main__':
+    # This block ONLY runs when you run 'python backend_api.py' locally
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

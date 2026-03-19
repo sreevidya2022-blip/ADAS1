@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercedes-Benz ADAS Intelligence Platform</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg: #05070d;
+  --bg2: #080c17;
+  --bg3: #0d1221;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: #1e2d47;
+  --accent: #00a8e8;
+  --accent2: #0066cc;
+  --accent3: #00e5b0;
+  --red: #ff3b5c;
+  --yellow: #f5c842;
+  --text: #e8edf5;
+  --text2: #8899b4;
+  --text3: #4a607a;
+  --mb-silver: #c0c8d4;
+  --glow: 0 0 30px rgba(0,168,232,0.15);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GRID BACKGROUND */
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(0,168,232,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,168,232,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+
+/* SIDEBAR */
+#sidebar {
+  position:fixed;
+  left:0; top:0; bottom:0;
+  width:72px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px 0;
+  z-index:100;
+  gap:8px;
+}
+
+.logo-mark {
+  width:44px; height:44px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'Bebas Neue';
+  font-size:20px;
+  color:#fff;
+  margin-bottom:20px;
+  box-shadow: 0 0 20px rgba(0,168,232,0.4);
+}
+
+.nav-item {
+  width:48px; height:48px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  color: var(--text3);
+  transition: all 0.2s;
+  position:relative;
+  border: 1px solid transparent;
+}
+
+.nav-item:hover { color: var(--accent); background: rgba(0,168,232,0.08); }
+.nav-item.active {
+  color: var(--accent);
+  background: rgba(0,168,232,0.12);
+  border-color: rgba(0,168,232,0.2);
+}
+
+.nav-item svg { width:20px; height:20px; }
+
+.nav-tooltip {
+  position:absolute;
+  left:58px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:12px;
+  white-space:nowrap;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.nav-item:hover .nav-tooltip { opacity:1; }
+
+/* TOPBAR */
+#topbar {
+  position:fixed;
+  left:72px; right:0; top:0;
+  height:60px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 24px;
+  z-index:99;
+}
+
+.topbar-left {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.page-title {
+  font-family:'Bebas Neue';
+  font-size:22px;
+  letter-spacing:1px;
+  color: var(--text);
+}
+
+.breadcrumb {
+  font-size:12px;
+  color: var(--text3);
+  font-family:'JetBrains Mono';
+}
+
+.topbar-right {
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.status-pill {
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background: rgba(0,229,176,0.08);
+  border: 1px solid rgba(0,229,176,0.2);
+  padding:5px 12px;
+  border-radius:20px;
+  font-size:12px;
+  color: var(--accent3);
+  font-family:'JetBrains Mono';
+}
+
+.pulse {
+  width:7px; height:7px;
+  background: var(--accent3);
+  border-radius:50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity:1; box-shadow:0 0 0 0 rgba(0,229,176,0.4); }
+  50% { opacity:0.7; box-shadow:0 0 0 5px rgba(0,229,176,0); }
+}
+
+/* MAIN CONTENT */
+#main {
+  margin-left:72px;
+  padding-top:60px;
+  min-height:100vh;
+  position:relative;
+  z-index:1;
+}
+
+.page { display:none; padding:24px; }
+.page.active { display:block; }
+
+/* SECTION HEADER */
+.section-header {
+  margin-bottom:24px;
+}
+
+.section-title {
+  font-family:'Bebas Neue';
+  font-size:32px;
+  letter-spacing:1px;
+  color: var(--text);
+  line-height:1;
+}
+
+.section-sub {
+  font-size:13px;
+  color: var(--text2);
+  margin-top:4px;
+}
+
+/* CARDS GRID */
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+.grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:20px; }
+.grid-2 { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:20px; }
+.grid-2-1 { display:grid; grid-template-columns:2fr 1fr; gap:16px; margin-bottom:20px; }
+.grid-1-2 { display:grid; grid-template-columns:1fr 2fr; gap:16px; margin-bottom:20px; }
+
+/* METRIC CARD */
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+  transition: border-color 0.2s;
+}
+
+.metric-card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+
+.metric-card:hover { border-color: rgba(0,168,232,0.3); }
+
+.metric-label {
+  font-size:11px;
+  color: var(--text3);
+  text-transform:uppercase;
+  letter-spacing:1px;
+  margin-bottom:8px;
+  font-family:'JetBrains Mono';
+}
+
+.metric-value {
+  font-family:'Bebas Neue';
+  font-size:42px;
+  line-height:1;
+  color: var(--text);
+}
+
+.metric-unit {
+  font-size:16px;
+  color: var(--text2);
+  margin-left:4px;
+}
+
+.metric-trend {
+  font-size:12px;
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.trend-up { color: var(--accent3); }
+.trend-down { color: var(--red); }
+.trend-neutral { color: var(--text3); }
+
+/* PANEL */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  margin-bottom:16px;
+}
+
+.panel-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+
+.panel-title {
+  font-size:14px;
+  font-weight:600;
+  color: var(--text);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.panel-action {
+  font-size:12px;
+  color: var(--accent);
+  cursor:pointer;
+  font-family:'JetBrains Mono';
+}
+
+/* CHART BARS */
+.chart-bars {
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+  height:120px;
+  padding-top:10px;
+}
+
+.bar-wrap {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  height:100%;
+  justify-content:flex-end;
+}
+
+.bar {
+  width:100%;
+  background: linear-gradient(to top, var(--accent2), var(--accent));
+  border-radius:4px 4px 0 0;
+  transition: height 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  position:relative;
+  min-height:4px;
+}
+
+.bar:hover { background: linear-gradient(to top, var(--accent), var(--accent3)); }
+
+.bar-label {
+  font-size:10px;
+  color: var(--text3);
+  font-family:'JetBrains Mono';
+}
+
+/* DONUT CHART */
+.donut-wrap {
+  display:flex;
+  align-items:center;
+  gap:24px;
+}
+
+.donut {
+  width:120px; height:120px;
+  position:relative;
+}
+
+.donut svg { transform:rotate(-90deg); }
+
+.donut-center {
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.donut-pct {
+  font-family:'Bebas Neue';
+  font-size:28px;
+  color: var(--text);
+  line-height:1;
+}
+
+.donut-sub {
+  font-size:10px;
+  color: var(--text3);
+}
+
+.donut-legend {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.legend-item {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  color: var(--text2);
+}
+
+.legend-dot {
+  width:8px; height:8px;
+  border-radius:50%;
+}
+
+/* TABLE */
+.data-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+.data-table th {
+  text-align:left;
+  padding:8px 12px;
+  font-size:11px;
+  color: var(--text3);
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  border-bottom: 1px solid var(--border);
+  font-family:'JetBrains Mono';
+}
+
+.data-table td {
+  padding:10px 12px;
+  border-bottom: 1px solid rgba(30,45,71,0.5);
+  color: var(--text2);
+}
+
+.data-table tr:hover td { background: rgba(0,168,232,0.04); }
+
+/* BADGE */
+.badge {
+  display:inline-flex;
+  align-items:center;
+  padding:3px 8px;
+  border-radius:20px;
+  font-size:11px;
+  font-family:'JetBrains Mono';
+  font-weight:500;
+}
+
+.badge-green { background:rgba(0,229,176,0.1); color:var(--accent3); border:1px solid rgba(0,229,176,0.2); }
+.badge-red { background:rgba(255,59,92,0.1); color:var(--red); border:1px solid rgba(255,59,92,0.2); }
+.badge-blue { background:rgba(0,168,232,0.1); color:var(--accent); border:1px solid rgba(0,168,232,0.2); }
+.badge-yellow { background:rgba(245,200,66,0.1); color:var(--yellow); border:1px solid rgba(245,200,66,0.2); }
+.badge-gray { background:rgba(74,96,122,0.2); color:var(--text3); border:1px solid var(--border); }
+
+/* BUTTON */
+.btn {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:8px 16px;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  border:none;
+  transition: all 0.2s;
+  font-family:'DM Sans',sans-serif;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color:#fff;
+}
+.btn-primary:hover { transform:translateY(-1px); box-shadow: 0 4px 20px rgba(0,168,232,0.3); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.btn-outline:hover { background: rgba(0,168,232,0.08); }
+
+.btn-ghost {
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); border-color: rgba(0,168,232,0.3); }
+
+/* INPUT */
+.input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius:8px;
+  padding:8px 12px;
+  color: var(--text);
+  font-size:13px;
+  font-family:'DM Sans',sans-serif;
+  outline:none;
+  transition: border-color 0.2s;
+  width:100%;
+}
+.input:focus { border-color: var(--accent); }
+
+/* SELECT */
+select.input { cursor:pointer; }
+option { background: var(--surface2); }
+
+/* TABS */
+.tabs {
+  display:flex;
+  gap:4px;
+  background: var(--bg3);
+  padding:4px;
+  border-radius:10px;
+  margin-bottom:20px;
+  width:fit-content;
+}
+
+.tab {
+  padding:7px 16px;
+  border-radius:7px;
+  font-size:13px;
+  cursor:pointer;
+  color: var(--text2);
+  transition: all 0.2s;
+  font-weight:500;
+}
+
+.tab.active {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.tab:hover:not(.active) { color: var(--text); }
+
+/* HEATMAP */
+.heatmap {
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  gap:4px;
+}
+
+.heatmap-cell {
+  aspect-ratio:1;
+  border-radius:3px;
+  transition: transform 0.2s;
+}
+.heatmap-cell:hover { transform:scale(1.3); }
+
+/* PROGRESS */
+.progress-row {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+.progress-label {
+  font-size:12px;
+  color: var(--text2);
+  width:120px;
+  flex-shrink:0;
+}
+
+.progress-bar-bg {
+  flex:1;
+  height:6px;
+  background: var(--bg3);
+  border-radius:3px;
+  overflow:hidden;
+}
+
+.progress-bar-fill {
+  height:100%;
+  border-radius:3px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.progress-val {
+  font-size:12px;
+  color: var(--text2);
+  font-family:'JetBrains Mono';
+  width:40px;
+  text-align:right;
+}
+
+/* ANNOTATION CANVAS */
+#annotation-canvas-wrap {
+  position:relative;
+  background: var(--bg3);
+  border: 2px dashed var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  cursor:crosshair;
+}
+
+#annotation-canvas {
+  display:block;
+  width:100%;
+}
+
+#upload-overlay {
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+}
+
+.upload-icon {
+  width:60px; height:60px;
+  border-radius:50%;
+  background: rgba(0,168,232,0.08);
+  border: 2px solid rgba(0,168,232,0.2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: var(--accent);
+}
+
+/* INCIDENT ROW */
+.incident-row {
+  display:flex;
+  align-items:flex-start;
+  gap:14px;
+  padding:14px;
+  border: 1px solid var(--border);
+  border-radius:10px;
+  margin-bottom:10px;
+  background: var(--bg3);
+  transition: border-color 0.2s;
+}
+
+.incident-row:hover { border-color: rgba(0,168,232,0.2); }
+
+.incident-icon {
+  width:38px; height:38px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+}
+
+.incident-icon.high { background:rgba(255,59,92,0.1); color:var(--red); }
+.incident-icon.medium { background:rgba(245,200,66,0.1); color:var(--yellow); }
+.incident-icon.low { background:rgba(0,168,232,0.1); color:var(--accent); }
+
+.incident-body { flex:1; }
+.incident-title { font-size:13px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.incident-meta { font-size:11px; color:var(--text3); font-family:'JetBrains Mono'; }
+.incident-desc { font-size:12px; color:var(--text2); margin-top:4px; }
+
+/* SIMULATION */
+.sim-road {
+  background: #1a1a2e;
+  border: 1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  position:relative;
+  height:300px;
+}
+
+.sim-road-surface {
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(#0a0a15 0%, #1a1a2e 50%, #0a0a15 100%),
+    repeating-linear-gradient(90deg, transparent, transparent 40%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.05) 41%);
+}
+
+.sim-lane-marker {
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:4px;
+  background: repeating-linear-gradient(to bottom, var(--yellow) 0px, var(--yellow) 20px, transparent 20px, transparent 40px);
+  top:0; bottom:0;
+  opacity:0.6;
+}
+
+.sim-vehicle {
+  position:absolute;
+  border-radius:6px;
+  transition: all 0.1s;
+}
+
+.sim-ego { background: linear-gradient(135deg,#005aaa,#0088dd); width:40px; height:70px; }
+.sim-other { background: linear-gradient(135deg,#333,#555); width:36px; height:60px; }
+.sim-pedestrian { background: linear-gradient(135deg,#ff6b6b,#ee4444); width:16px; height:28px; border-radius:50% 50% 30% 30%; }
+
+.detection-box {
+  position:absolute;
+  border:2px solid var(--accent3);
+  border-radius:4px;
+  animation: detectPulse 1s infinite;
+}
+
+@keyframes detectPulse {
+  0%,100% { opacity:1; }
+  50% { opacity:0.5; }
+}
+
+.detection-label {
+  position:absolute;
+  top:-20px;
+  left:0;
+  background: rgba(0,229,176,0.9);
+  color:#000;
+  font-size:9px;
+  padding:1px 5px;
+  border-radius:3px;
+  font-family:'JetBrains Mono';
+  white-space:nowrap;
+}
+
+/* SALIENCY MAP */
+.saliency-wrap {
+  position:relative;
+  border-radius:10px;
+  overflow:hidden;
+  background: var(--bg3);
+}
+
+.saliency-overlay {
+  position:absolute;
+  inset:0;
+  border-radius:10px;
+  pointer-events:none;
+}
+
+/* COMPLIANCE METER */
+.compliance-meter {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:20px;
+}
+
+.arc-wrap {
+  position:relative;
+  width:180px;
+  height:100px;
+  overflow:hidden;
+}
+
+.arc-wrap svg {
+  position:absolute;
+  bottom:0;
+  left:0;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* TELEMETRY */
+.tele-feed {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:16px;
+}
+
+.tele-sensor {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius:10px;
+  padding:14px;
+  text-align:center;
+}
+
+.tele-icon { font-size:28px; margin-bottom:6px; }
+.tele-name { font-size:11px; color:var(--text3); font-family:'JetBrains Mono'; }
+.tele-val { font-family:'Bebas Neue'; font-size:24px; color:var(--accent); margin-top:4px; }
+
+/* LIVE CHART LINE */
+.line-chart-wrap {
+  height:80px;
+  position:relative;
+  overflow:hidden;
+}
+
+.line-chart-wrap svg {
+  width:100%; height:100%;
+}
+
+/* EXPLAINABILITY */
+.explain-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.feature-importance {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.fi-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.fi-label { font-size:12px; color:var(--text2); width:130px; flex-shrink:0; }
+.fi-bar-bg { flex:1; height:8px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+.fi-bar { height:100%; border-radius:4px; }
+.fi-val { font-size:12px; color:var(--text3); font-family:'JetBrains Mono'; width:40px; text-align:right; }
+
+/* MODEL CARD */
+.model-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius:12px;
+  padding:20px;
+  position:relative;
+  transition: all 0.2s;
+}
+
+.model-card.active-model {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+}
+
+.model-card.active-model::before {
+  content:'LIVE';
+  position:absolute;
+  top:12px; right:12px;
+  background: var(--accent3);
+  color:#000;
+  font-size:10px;
+  font-family:'JetBrains Mono';
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:10px;
+}
+
+.model-version { font-family:'Bebas Neue'; font-size:28px; color:var(--text); }
+.model-type { font-size:12px; color:var(--accent); font-family:'JetBrains Mono'; margin-bottom:12px; }
+.model-metrics { display:flex; gap:16px; flex-wrap:wrap; }
+.model-metric { font-size:12px; color:var(--text3); }
+.model-metric span { color:var(--text); font-weight:600; }
+
+/* CONFUSION MATRIX */
+.confusion-matrix {
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:3px;
+  font-size:11px;
+}
+
+.cm-cell {
+  aspect-ratio:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:4px;
+  font-family:'JetBrains Mono';
+  font-size:12px;
+  font-weight:600;
+}
+
+/* ROAD SCENARIO */
+.scenario-chip {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+  cursor:pointer;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text2);
+  transition: all 0.2s;
+  margin:4px;
+}
+
+.scenario-chip.selected {
+  background: rgba(0,168,232,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ANIMATIONS */
+@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.page.active { animation: fadeIn 0.3s ease; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ALERT BANNER */
+.alert-banner {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:10px 16px;
+  border-radius:8px;
+  font-size:13px;
+  margin-bottom:16px;
+}
+
+.alert-critical { background:rgba(255,59,92,0.1); border:1px solid rgba(255,59,92,0.3); color:var(--red); }
+.alert-warning { background:rgba(245,200,66,0.1); border:1px solid rgba(245,200,66,0.3); color:var(--yellow); }
+.alert-info { background:rgba(0,168,232,0.1); border:1px solid rgba(0,168,232,0.3); color:var(--accent); }
+
+/* RANGE SLIDER */
+input[type=range] {
+  -webkit-appearance:none;
+  width:100%;
+  height:4px;
+  background: var(--border);
+  border-radius:2px;
+  outline:none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none;
+  width:16px; height:16px;
+  border-radius:50%;
+  background: var(--accent);
+  cursor:pointer;
+  box-shadow:0 0 8px rgba(0,168,232,0.5);
+}
+
+/* CHECKBOX */
+.checkbox-row {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:var(--text2);
+  cursor:pointer;
+  margin-bottom:8px;
+}
+input[type=checkbox] { accent-color:var(--accent); width:14px; height:14px; cursor:pointer; }
+
+/* FLEX UTILS */
+.flex { display:flex; }
+.flex-center { display:flex; align-items:center; justify-content:center; }
+.flex-between { display:flex; align-items:center; justify-content:space-between; }
+.gap-8 { gap:8px; }
+.gap-12 { gap:12px; }
+.mt-16 { margin-top:16px; }
+.mb-8 { margin-bottom:8px; }
+.mb-16 { margin-bottom:16px; }
+.text-sm { font-size:12px; }
+.text-xs { font-size:11px; }
+.text-muted { color:var(--text2); }
+.text-accent { color:var(--accent); }
+.mono { font-family:'JetBrains Mono'; }
+.bold { font-weight:600; }
+.w-full { width:100%; }
+
+/* SCROLLABLE PANEL */
+.scrollable { max-height:320px; overflow-y:auto; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo-mark">MB</div>
+
+  <div class="nav-item active" onclick="showPage('dashboard',this)" title="">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    <span class="nav-tooltip">Dashboard</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('annotation',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
+    </svg>
+    <span class="nav-tooltip">Annotation Tool</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('models',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    <span class="nav-tooltip">Model Monitor</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('incidents',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+    </svg>
+    <span class="nav-tooltip">Incidents</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('simulation',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </svg>
+    <span class="nav-tooltip">Simulation</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('compliance',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+    <span class="nav-tooltip">Compliance</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('telemetry',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+    </svg>
+    <span class="nav-tooltip">Telemetry</span>
+  </div>
+
+  <div class="nav-item" onclick="showPage('explainability',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="12" cy="12" r="10"/>
+      <path d="M12 16v-4M12 8h.01"/>
+    </svg>
+    <span class="nav-tooltip">Explainability</span>
+  </div>
+</nav>
+
+<!-- TOPBAR -->
+<header id="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="page-title" id="page-title">PERFORMANCE DASHBOARD</div>
+      <div class="breadcrumb" id="page-breadcrumb">Mercedes-Benz Trucks / ADAS Platform / Overview</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-pill"><div class="pulse"></div> 12 Vehicles Live</div>
+    <div class="status-pill" style="border-color:rgba(0,168,232,0.2);color:var(--accent);">
+      <div class="pulse" style="background:var(--accent);"></div> API Connected
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================
+     PAGE 1: DASHBOARD
+     ============================ -->
+<div class="page active" id="page-dashboard">
+  <div class="section-header">
+    <div class="section-title">ADAS Performance Overview</div>
+    <div class="section-sub">Real-time metrics across European fleet · Last updated <span class="mono" id="last-update">just now</span></div>
+  </div>
+
+  <div class="alert-banner alert-warning">
+    ⚠️ Vehicle MB-TK-047 (Poland) reporting elevated false positive rate — 8.3% above threshold. Review recommended.
+  </div>
+
+  <!-- KPI ROW -->
+  <div class="grid-4">
+    <div class="metric-card">
+      <div class="metric-label">Detection Accuracy</div>
+      <div class="metric-value">94<span class="metric-unit">%</span></div>
+      <div class="metric-trend trend-up">▲ +1.2% this week</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total Detections</div>
+      <div class="metric-value">1.24<span class="metric-unit">M</span></div>
+      <div class="metric-trend trend-up">▲ +18K today</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">False Positive Rate</div>
+      <div class="metric-value">2.1<span class="metric-unit">%</span></div>
+      <div class="metric-trend trend-down">▼ -0.3% this week</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Avg Response Time</div>
+      <div class="metric-value">42<span class="metric-unit">ms</span></div>
+      <div class="metric-trend trend-neutral">— stable</div>
+    </div>
+  </div>
+
+  <div class="grid-4">
+    <div class="metric-card">
+      <div class="metric-label">EU Compliance</div>
+      <div class="metric-value">98<span class="metric-unit">%</span></div>
+      <div class="metric-trend trend-up">▲ ISO 26262 Passed</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Active Vehicles</div>
+      <div class="metric-value">127</div>
+      <div class="metric-trend trend-neutral">3 regions</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Model Version</div>
+      <div class="metric-value" style="font-size:28px;">YOLOv5</div>
+      <div class="metric-trend text-accent">v2.1 — Production</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Incidents (7d)</div>
+      <div class="metric-value" style="color:var(--yellow);">3</div>
+      <div class="metric-trend" style="color:var(--yellow);">1 critical</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+          Weekly Detections by Class
+        </div>
+        <span class="panel-action">Export CSV</span>
+      </div>
+      <div class="chart-bars" id="detection-chart">
+        <!-- Generated by JS -->
+      </div>
+      <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap;">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Vehicle</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Pedestrian</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Cyclist</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Obstacle</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Detection Class Distribution</div>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut">
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="16"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent)" stroke-width="16"
+              stroke-dasharray="188 126" stroke-linecap="round"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--accent3)" stroke-width="16"
+              stroke-dasharray="75 239" stroke-dashoffset="-188" stroke-linecap="round"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--yellow)" stroke-width="16"
+              stroke-dasharray="38 276" stroke-dashoffset="-263" stroke-linecap="round"/>
+            <circle cx="60" cy="60" r="50" fill="none" stroke="var(--red)" stroke-width="16"
+              stroke-dasharray="13 301" stroke-dashoffset="-301" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-pct">1.24M</div>
+            <div class="donut-sub">total</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Vehicle — 60%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Pedestrian — 24%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Cyclist — 12%</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Obstacle — 4%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEATMAP + REGIONAL -->
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Problem Area Heatmap — Germany (Munich Region)</div>
+      </div>
+      <div class="heatmap" id="heatmap-grid"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--text3);">
+        <span>Low</span>
+        <div style="flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,#0a2a4a,#0066cc,#00a8e8,#f5c842,#ff3b5c)"></div>
+        <span>High</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Regional Fleet Status</div>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr><th>Region</th><th>Vehicles</th><th>Accuracy</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="bold">Germany</td><td>54</td><td class="text-accent">95.8%</td><td><span class="badge badge-green">Compliant</span></td></tr>
+          <tr><td class="bold">France</td><td>41</td><td class="text-accent">94.1%</td><td><span class="badge badge-green">Compliant</span></td></tr>
+          <tr><td class="bold">Poland</td><td>32</td><td style="color:var(--yellow)">91.2%</td><td><span class="badge badge-yellow">Review</span></td></tr>
+        </tbody>
+      </table>
+      <div class="mt-16">
+        <div class="section-sub mb-8">Sensor Uptime</div>
+        <div class="progress-row"><div class="progress-label">Camera Array</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:99%"></div></div><div class="progress-val">99%</div></div>
+        <div class="progress-row"><div class="progress-label">LiDAR</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:97%"></div></div><div class="progress-val">97%</div></div>
+        <div class="progress-row"><div class="progress-label">Radar</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:98%"></div></div><div class="progress-val">98%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 2: ANNOTATION
+     ============================ -->
+<div class="page" id="page-annotation">
+  <div class="section-header">
+    <div class="section-title">Dataset Annotation Tool</div>
+    <div class="section-sub">Label truck sensor imagery for model training</div>
+  </div>
+
+  <div class="grid-2-1" style="align-items:start">
+    <div>
+      <div class="panel" style="padding:0;overflow:hidden;">
+        <div id="annotation-canvas-wrap" style="min-height:380px;">
+          <canvas id="annotation-canvas" width="800" height="380"></canvas>
+          <div id="upload-overlay">
+            <div class="upload-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+              </svg>
+            </div>
+            <div style="font-size:15px;font-weight:600;">Drop image here</div>
+            <div class="text-muted text-sm">or click to upload truck sensor data</div>
+            <label class="btn btn-primary" style="cursor:pointer;">
+              Browse Files
+              <input type="file" accept="image/*" style="display:none" onchange="loadAnnotationImage(event)">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Annotation Classes</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost" onclick="clearAnnotations()" style="font-size:12px;padding:5px 10px;">Clear All</button>
+            <button class="btn btn-primary" onclick="saveAnnotations()" style="font-size:12px;padding:5px 10px;">Save & Export</button>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="scenario-chip selected" onclick="selectClass(this,'vehicle','#00a8e8')" data-class="vehicle" data-color="#00a8e8">🚗 Vehicle</div>
+          <div class="scenario-chip" onclick="selectClass(this,'pedestrian','#00e5b0')" data-class="pedestrian" data-color="#00e5b0">🚶 Pedestrian</div>
+          <div class="scenario-chip" onclick="selectClass(this,'cyclist','#f5c842')" data-class="cyclist" data-color="#f5c842">🚴 Cyclist</div>
+          <div class="scenario-chip" onclick="selectClass(this,'lane','#cc44ff')" data-class="lane" data-color="#cc44ff">〰️ Lane</div>
+          <div class="scenario-chip" onclick="selectClass(this,'obstacle','#ff3b5c')" data-class="obstacle" data-color="#ff3b5c">⚠️ Obstacle</div>
+          <div class="scenario-chip" onclick="selectClass(this,'traffic_sign','#ff8c00')" data-class="traffic_sign" data-color="#ff8c00">🛑 Traffic Sign</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Annotations <span class="badge badge-blue" id="ann-count">0</span></div>
+        </div>
+        <div id="annotation-list" class="scrollable" style="min-height:200px;">
+          <div class="flex-center" style="height:80px;color:var(--text3);font-size:13px;">No annotations yet</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title mb-8">Queue Stats</div>
+        <div class="progress-row"><div class="progress-label">Labeled</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:68%"></div></div><div class="progress-val">68%</div></div>
+        <div class="progress-row"><div class="progress-label">Reviewed</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:41%"></div></div><div class="progress-val">41%</div></div>
+        <div class="progress-row"><div class="progress-label">Exported</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:29%"></div></div><div class="progress-val">29%</div></div>
+        <div class="mt-16 text-sm text-muted">
+          <div style="margin-bottom:6px;">📁 Dataset: BDD100K-MB-Subset</div>
+          <div style="margin-bottom:6px;">🖼️ Total Images: 12,847</div>
+          <div>👥 Active Annotators: 6</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title mb-8">Export Format</div>
+        <select class="input mb-8">
+          <option>COCO JSON</option>
+          <option>YOLO TXT</option>
+          <option>Pascal VOC XML</option>
+          <option>TFRecord</option>
+        </select>
+        <button class="btn btn-outline w-full">⬇ Export Dataset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 3: MODEL MONITOR
+     ============================ -->
+<div class="page" id="page-models">
+  <div class="section-header">
+    <div class="section-title">ML Model Performance Monitor</div>
+    <div class="section-sub">A/B testing, metrics, and deployment tracking</div>
+  </div>
+
+  <div class="grid-3">
+    <div class="model-card active-model">
+      <div class="model-version">v2.1</div>
+      <div class="model-type">YOLOv5 · CSPDarknet53</div>
+      <div class="model-metrics">
+        <div class="model-metric">mAP <span>94.2%</span></div>
+        <div class="model-metric">Precision <span>93.8%</span></div>
+        <div class="model-metric">Recall <span>92.1%</span></div>
+        <div class="model-metric">FPS <span>24</span></div>
+      </div>
+      <div style="margin-top:12px;">
+        <span class="badge badge-green">Production · Germany, France</span>
+      </div>
+    </div>
+    <div class="model-card">
+      <div class="model-version">v2.0</div>
+      <div class="model-type">YOLOv4 · CSPDarknet53</div>
+      <div class="model-metrics">
+        <div class="model-metric">mAP <span>93.8%</span></div>
+        <div class="model-metric">Precision <span>92.1%</span></div>
+        <div class="model-metric">Recall <span>91.5%</span></div>
+        <div class="model-metric">FPS <span>22</span></div>
+      </div>
+      <div style="margin-top:12px;"><span class="badge badge-yellow">Shadow · Poland</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-version">v1.9</div>
+      <div class="model-type">YOLOv3 · Darknet</div>
+      <div class="model-metrics">
+        <div class="model-metric">mAP <span>89.4%</span></div>
+        <div class="model-metric">Precision <span>88.0%</span></div>
+        <div class="model-metric">Recall <span>87.2%</span></div>
+        <div class="model-metric">FPS <span>18</span></div>
+      </div>
+      <div style="margin-top:12px;"><span class="badge badge-gray">Deprecated</span></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Confusion Matrix — v2.1</div>
+        <select class="input" style="width:auto;font-size:12px;padding:4px 8px;">
+          <option>All Classes</option><option>Vehicle</option><option>Pedestrian</option>
+        </select>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:JetBrains Mono;">Predicted →</div>
+      <div class="confusion-matrix" id="confusion-matrix"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;">↑ Actual</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Precision-Recall by Class</div>
+      </div>
+      <div class="feature-importance">
+        <div class="fi-row"><div class="fi-label">Vehicle</div><div class="fi-bar-bg"><div class="fi-bar" style="width:94%;background:var(--accent)"></div></div><div class="fi-val">94%</div></div>
+        <div class="fi-row"><div class="fi-label">Pedestrian</div><div class="fi-bar-bg"><div class="fi-bar" style="width:91%;background:var(--accent3)"></div></div><div class="fi-val">91%</div></div>
+        <div class="fi-row"><div class="fi-label">Cyclist</div><div class="fi-bar-bg"><div class="fi-bar" style="width:88%;background:var(--yellow)"></div></div><div class="fi-val">88%</div></div>
+        <div class="fi-row"><div class="fi-label">Lane</div><div class="fi-bar-bg"><div class="fi-bar" style="width:97%;background:var(--accent2)"></div></div><div class="fi-val">97%</div></div>
+        <div class="fi-row"><div class="fi-label">Obstacle</div><div class="fi-bar-bg"><div class="fi-bar" style="width:82%;background:var(--red)"></div></div><div class="fi-val">82%</div></div>
+        <div class="fi-row"><div class="fi-label">Traffic Sign</div><div class="fi-bar-bg"><div class="fi-bar" style="width:95%;background:#cc44ff)"></div></div><div class="fi-val">95%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Road Scenario Performance</div>
+      <div style="display:flex;gap:6px;">
+        <div class="scenario-chip selected">All</div>
+        <div class="scenario-chip">Highway</div>
+        <div class="scenario-chip">Urban</div>
+        <div class="scenario-chip">Rain</div>
+        <div class="scenario-chip">Night</div>
+        <div class="scenario-chip">Fog</div>
+        <div class="scenario-chip">Snow</div>
+      </div>
+    </div>
+    <div class="grid-3">
+      <div style="text-align:center;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:JetBrains Mono">HIGHWAY</div>
+        <div style="font-family:Bebas Neue;font-size:36px;color:var(--accent3)">96.8%</div>
+        <div style="font-size:12px;color:var(--text2)">Best condition</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:JetBrains Mono">URBAN</div>
+        <div style="font-family:Bebas Neue;font-size:36px;color:var(--accent)">93.2%</div>
+        <div style="font-size:12px;color:var(--text2)">Good performance</div>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--bg3);border-radius:10px;border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;font-family:JetBrains Mono">ADVERSE WEATHER</div>
+        <div style="font-family:Bebas Neue;font-size:36px;color:var(--yellow)">87.4%</div>
+        <div style="font-size:12px;color:var(--text2)">Needs improvement</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 4: INCIDENTS
+     ============================ -->
+<div class="page" id="page-incidents">
+  <div class="section-header">
+    <div class="section-title">Incident & Edge Case Analyzer</div>
+    <div class="section-sub">Log, review, and cluster ADAS failure events</div>
+  </div>
+
+  <div class="alert-banner alert-critical">
+    🔴 CRITICAL: MB-TK-012 near-miss incident logged 2 hours ago — pedestrian detection failure in heavy rain (Munich A9)
+  </div>
+
+  <div class="grid-4" style="margin-bottom:20px;">
+    <div class="metric-card"><div class="metric-label">Open Incidents</div><div class="metric-value" style="color:var(--red)">3</div><div class="metric-trend">this week</div></div>
+    <div class="metric-card"><div class="metric-label">Under Review</div><div class="metric-value" style="color:var(--yellow)">7</div><div class="metric-trend">requires action</div></div>
+    <div class="metric-card"><div class="metric-label">Resolved</div><div class="metric-value" style="color:var(--accent3)">42</div><div class="metric-trend trend-up">this month</div></div>
+    <div class="metric-card"><div class="metric-label">MTTR</div><div class="metric-value">4.2<span class="metric-unit">h</span></div><div class="metric-trend trend-neutral">mean time to resolve</div></div>
+  </div>
+
+  <div class="grid-2-1">
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Active Incidents</div>
+          <div style="display:flex;gap:8px;">
+            <select class="input" style="width:auto;font-size:12px;padding:4px 8px;"><option>All Severity</option><option>Critical</option><option>High</option><option>Medium</option></select>
+            <button class="btn btn-primary" style="font-size:12px;padding:5px 12px;">+ Log Incident</button>
+          </div>
+        </div>
+
+        <div class="incident-row">
+          <div class="incident-icon high">⚡</div>
+          <div class="incident-body">
+            <div class="incident-title">Pedestrian Detection Failure — Heavy Rain</div>
+            <div class="incident-meta">MB-TK-012 · Munich A9 · 2h ago · <span style="color:var(--red)">CRITICAL</span></div>
+            <div class="incident-desc">Model failed to detect pedestrian crossing at 35m in heavy rain (visibility ~80m). False negative. Driver intervention required.</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <span class="badge badge-red">False Negative</span>
+              <span class="badge badge-blue">Rain</span>
+              <span class="badge badge-blue">Urban</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="incident-row">
+          <div class="incident-icon medium">⚠️</div>
+          <div class="incident-body">
+            <div class="incident-title">Ghost Object — Static Scene</div>
+            <div class="incident-meta">MB-TK-047 · Warsaw Ring Road · 6h ago · HIGH</div>
+            <div class="incident-desc">Vehicle repeatedly detected in empty lane. 15 false triggers over 3-minute period. Likely road surface reflection.</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <span class="badge badge-yellow">False Positive</span>
+              <span class="badge badge-blue">Highway</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="incident-row">
+          <div class="incident-icon medium">⚠️</div>
+          <div class="incident-body">
+            <div class="incident-title">Lane Departure Warning Lag</div>
+            <div class="incident-meta">MB-TK-089 · Frankfurt A5 · 1d ago · MEDIUM</div>
+            <div class="incident-desc">Lane detection response time spiked to 380ms (threshold: 200ms) during road works section with temporary markings.</div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <span class="badge badge-yellow">Latency</span>
+              <span class="badge badge-blue">Road Works</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-title mb-8">Failure Pattern Clusters</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:4px;">Cluster A — Weather</div>
+            <div style="font-size:11px;color:var(--text2)">18 incidents · Rain, Fog, Snow</div>
+            <div class="progress-bar-bg mt-16" style="margin-top:8px;"><div class="progress-bar-fill" style="width:65%;background:linear-gradient(90deg,var(--red),#ff6b6b)"></div></div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600;color:var(--yellow);margin-bottom:4px;">Cluster B — Lighting</div>
+            <div style="font-size:11px;color:var(--text2)">11 incidents · Night, Glare</div>
+            <div class="progress-bar-bg" style="margin-top:8px;"><div class="progress-bar-fill" style="width:40%;background:linear-gradient(90deg,var(--yellow),#ffdd44)"></div></div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:12px;border:1px solid var(--border)">
+            <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px;">Cluster C — Road Works</div>
+            <div style="font-size:11px;color:var(--text2)">7 incidents · Temp markings</div>
+            <div class="progress-bar-bg" style="margin-top:8px;"><div class="progress-bar-fill" style="width:25%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title mb-8">Environmental Analysis</div>
+        <div class="progress-row"><div class="progress-label">Rain/Wet</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:43%;background:linear-gradient(90deg,#0055aa,#0099ff)"></div></div><div class="progress-val">43%</div></div>
+        <div class="progress-row"><div class="progress-label">Night</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:28%;background:linear-gradient(90deg,#330066,#9900cc)"></div></div><div class="progress-val">28%</div></div>
+        <div class="progress-row"><div class="progress-label">Fog</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:15%;background:linear-gradient(90deg,#445566,#8899aa)"></div></div><div class="progress-val">15%</div></div>
+        <div class="progress-row"><div class="progress-label">Road Works</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:14%;background:linear-gradient(90deg,#664400,#ff8800)"></div></div><div class="progress-val">14%</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 5: SIMULATION
+     ============================ -->
+<div class="page" id="page-simulation">
+  <div class="section-header">
+    <div class="section-title">Fleet Simulation & Testing Hub</div>
+    <div class="section-sub">Test ADAS scenarios in virtual European road environments</div>
+  </div>
+
+  <div class="grid-2-1" style="align-items:start">
+    <div>
+      <div class="panel" style="padding:0;overflow:hidden;">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <div class="panel-title">Live Simulation — A9 Munich Corridor</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost" id="sim-pause-btn" onclick="toggleSimulation()" style="font-size:12px;padding:5px 10px;">⏸ Pause</button>
+            <button class="btn btn-primary" onclick="resetSimulation()" style="font-size:12px;padding:5px 10px;">↺ Reset</button>
+          </div>
+        </div>
+        <div class="sim-road" id="sim-road">
+          <div class="sim-road-surface"></div>
+          <div class="sim-lane-marker"></div>
+          <!-- Vehicles rendered by JS -->
+        </div>
+        <div style="padding:12px 16px;background:var(--bg3);border-top:1px solid var(--border);display:flex;gap:20px;font-size:12px;">
+          <div class="mono">Speed: <span id="sim-speed" style="color:var(--accent)">62</span> km/h</div>
+          <div class="mono">TTC: <span id="sim-ttc" style="color:var(--accent3)">4.2</span>s</div>
+          <div class="mono">Objects: <span id="sim-objects" style="color:var(--yellow)">3</span></div>
+          <div class="mono">Alerts: <span id="sim-alerts" style="color:var(--red)">0</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Detection Overlay — What the Model Sees</div>
+        </div>
+        <canvas id="detection-canvas" width="600" height="180" style="width:100%;border-radius:8px;background:#0a0f1a;"></canvas>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-title mb-8">Scenario Configuration</div>
+        <div style="margin-bottom:12px;">
+          <div class="text-sm text-muted mb-8">Environment</div>
+          <select class="input" onchange="changeScenario(this.value)">
+            <option>Highway A9 — Munich</option>
+            <option>Urban B2 — Berlin</option>
+            <option>Ring Road — Warsaw</option>
+            <option>Mountain Pass — Austria</option>
+            <option>Construction Zone — Frankfurt</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div class="text-sm text-muted mb-8">Weather Condition</div>
+          <select class="input">
+            <option>Clear</option>
+            <option>Rain</option>
+            <option>Heavy Rain</option>
+            <option>Fog</option>
+            <option>Snow</option>
+            <option>Night</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px;">
+          <div class="flex-between mb-8"><div class="text-sm text-muted">Traffic Density</div><div class="mono text-sm" id="density-val">Medium</div></div>
+          <input type="range" min="1" max="3" value="2" oninput="document.getElementById('density-val').textContent=['Low','Medium','High'][this.value-1]">
+        </div>
+        <div style="margin-bottom:12px;">
+          <div class="flex-between mb-8"><div class="text-sm text-muted">Ego Speed</div><div class="mono text-sm" id="speed-val">62 km/h</div></div>
+          <input type="range" min="20" max="120" value="62" oninput="document.getElementById('speed-val').textContent=this.value+' km/h';document.getElementById('sim-speed').textContent=this.value">
+        </div>
+        <div style="margin-bottom:16px;">
+          <div class="text-sm text-muted mb-8">Inject Hazard</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <label class="checkbox-row"><input type="checkbox" onchange="toggleHazard('pedestrian',this.checked)"> Random pedestrian crossing</label>
+            <label class="checkbox-row"><input type="checkbox" onchange="toggleHazard('cutoff',this.checked)"> Vehicle cut-off</label>
+            <label class="checkbox-row"><input type="checkbox" onchange="toggleHazard('obstacle',this.checked)"> Road obstacle</label>
+            <label class="checkbox-row"><input type="checkbox" onchange="toggleHazard('cyclist',this.checked)"> Cyclist merge</label>
+          </div>
+        </div>
+        <button class="btn btn-primary w-full">▶ Run Test Batch (100 scenarios)</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title mb-8">Sim Results</div>
+        <div class="progress-row"><div class="progress-label">Pass Rate</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:93%"></div></div><div class="progress-val">93%</div></div>
+        <div class="progress-row"><div class="progress-label">Avg Detection</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:88%"></div></div><div class="progress-val">88%</div></div>
+        <div class="progress-row"><div class="progress-label">Reaction Time</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:76%"></div></div><div class="progress-val">45ms</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 6: COMPLIANCE
+     ============================ -->
+<div class="page" id="page-compliance">
+  <div class="section-header">
+    <div class="section-title">Compliance & Regulatory Dashboard</div>
+    <div class="section-sub">EU ADAS regulations · ISO 26262 · SOTIF · UN R156</div>
+  </div>
+
+  <div class="grid-3">
+    <div class="panel" style="text-align:center;">
+      <div style="font-size:11px;color:var(--text3);font-family:JetBrains Mono;margin-bottom:8px;">ISO 26262 — FUNCTIONAL SAFETY</div>
+      <div style="font-family:Bebas Neue;font-size:52px;color:var(--accent3)">ASIL-D</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Highest automotive safety level</div>
+      <span class="badge badge-green">✓ Certified</span>
+    </div>
+    <div class="panel" style="text-align:center;">
+      <div style="font-size:11px;color:var(--text3);font-family:JetBrains Mono;margin-bottom:8px;">SOTIF — ISO 21448</div>
+      <div style="font-family:Bebas Neue;font-size:52px;color:var(--accent)">98.5%</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Safety of intended functionality</div>
+      <span class="badge badge-green">✓ Compliant</span>
+    </div>
+    <div class="panel" style="text-align:center;">
+      <div style="font-size:11px;color:var(--text3);font-family:JetBrains Mono;margin-bottom:8px;">UN R156 — SOFTWARE UPDATE</div>
+      <div style="font-family:Bebas Neue;font-size:52px;color:var(--yellow)">PENDING</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:12px;">OTA update framework review</div>
+      <span class="badge badge-yellow">⏳ In Review</span>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Test Coverage Report</div>
+        <span class="panel-action">Download PDF</span>
+      </div>
+      <div class="progress-row"><div class="progress-label">Unit Tests</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:94%"></div></div><div class="progress-val">94%</div></div>
+      <div class="progress-row"><div class="progress-label">Integration</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:88%"></div></div><div class="progress-val">88%</div></div>
+      <div class="progress-row"><div class="progress-label">Simulation</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:76%"></div></div><div class="progress-val">76%</div></div>
+      <div class="progress-row"><div class="progress-label">Road Testing</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:62%"></div></div><div class="progress-val">62%</div></div>
+      <div class="progress-row"><div class="progress-label">Edge Cases</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:45%"></div></div><div class="progress-val">45%</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Audit Trail</div>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Action</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">2024-03-15</td><td>Model v2.1 deployed</td><td><span class="badge badge-green">Approved</span></td></tr>
+          <tr><td class="mono">2024-03-10</td><td>ISO 26262 audit</td><td><span class="badge badge-green">Passed</span></td></tr>
+          <tr><td class="mono">2024-03-05</td><td>SOTIF review</td><td><span class="badge badge-green">Passed</span></td></tr>
+          <tr><td class="mono">2024-02-28</td><td>UN R156 submission</td><td><span class="badge badge-yellow">Pending</span></td></tr>
+          <tr><td class="mono">2024-02-20</td><td>Model v2.0 retire</td><td><span class="badge badge-gray">Complete</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Regional Compliance Matrix</div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Standard</th><th>Germany</th><th>France</th><th>Poland</th><th>Required By</th><th>Next Review</th></tr></thead>
+      <tbody>
+        <tr><td class="bold">ISO 26262</td><td><span class="badge badge-green">✓ ASIL-D</span></td><td><span class="badge badge-green">✓ ASIL-D</span></td><td><span class="badge badge-green">✓ ASIL-D</span></td><td>All EU</td><td class="mono">2024-09-15</td></tr>
+        <tr><td class="bold">SOTIF (21448)</td><td><span class="badge badge-green">✓ 98.5%</span></td><td><span class="badge badge-green">✓ 97.8%</span></td><td><span class="badge badge-yellow">⚠ 91.2%</span></td><td>All EU</td><td class="mono">2024-06-30</td></tr>
+        <tr><td class="bold">UN R156</td><td><span class="badge badge-yellow">⏳ Review</span></td><td><span class="badge badge-yellow">⏳ Review</span></td><td><span class="badge badge-yellow">⏳ Review</span></td><td>EU 2024+</td><td class="mono">2024-04-01</td></tr>
+        <tr><td class="bold">GDPR (data)</td><td><span class="badge badge-green">✓ Compliant</span></td><td><span class="badge badge-green">✓ Compliant</span></td><td><span class="badge badge-green">✓ Compliant</span></td><td>EU</td><td class="mono">2025-01-01</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 7: TELEMETRY
+     ============================ -->
+<div class="page" id="page-telemetry">
+  <div class="section-header">
+    <div class="section-title">Real-Time Vehicle Telemetry</div>
+    <div class="section-sub">Live sensor feeds from Mercedes-Benz Actros test fleet</div>
+  </div>
+
+  <div class="grid-2-1" style="margin-bottom:16px;align-items:start">
+    <div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;align-items:center">
+        <select class="input" style="max-width:220px;">
+          <option>MB-TK-012 — Munich</option>
+          <option>MB-TK-047 — Warsaw</option>
+          <option>MB-TK-089 — Frankfurt</option>
+          <option>MB-TK-103 — Paris</option>
+        </select>
+        <div class="status-pill"><div class="pulse"></div> LIVE</div>
+      </div>
+      <div class="tele-feed">
+        <div class="tele-sensor">
+          <div class="tele-icon">📷</div>
+          <div class="tele-name">FRONT CAM</div>
+          <div class="tele-val" id="cam-fps">30 fps</div>
+        </div>
+        <div class="tele-sensor">
+          <div class="tele-icon">📡</div>
+          <div class="tele-name">LiDAR</div>
+          <div class="tele-val" id="lidar-pts">128K pts</div>
+        </div>
+        <div class="tele-sensor">
+          <div class="tele-icon">〰️</div>
+          <div class="tele-name">RADAR</div>
+          <div class="tele-val" id="radar-range">180m</div>
+        </div>
+        <div class="tele-sensor">
+          <div class="tele-icon">🧭</div>
+          <div class="tele-name">GPS</div>
+          <div class="tele-val" id="gps-acc">±0.3m</div>
+        </div>
+        <div class="tele-sensor">
+          <div class="tele-icon">⚡</div>
+          <div class="tele-name">SPEED</div>
+          <div class="tele-val" id="tele-speed">62 km/h</div>
+        </div>
+        <div class="tele-sensor">
+          <div class="tele-icon">🌡️</div>
+          <div class="tele-name">TEMP</div>
+          <div class="tele-val" id="tele-temp">18°C</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-title mb-8">ML Inference Overlay</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="background:var(--bg3);border-radius:8px;padding:10px;border-left:3px solid var(--accent);font-size:12px;">
+            <span class="badge badge-blue" style="margin-right:8px;">Vehicle</span>
+            <span class="mono">conf: 0.96 · 18m ahead</span>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px;border-left:3px solid var(--accent3);font-size:12px;">
+            <span class="badge badge-green" style="margin-right:8px;">Lane</span>
+            <span class="mono">conf: 0.99 · centered</span>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px;border-left:3px solid var(--yellow);font-size:12px;">
+            <span class="badge badge-yellow" style="margin-right:8px;">Sign</span>
+            <span class="mono">conf: 0.91 · 80km/h limit</span>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <div class="flex-between text-sm text-muted">
+            <span>Inference latency</span>
+            <span class="mono text-accent" id="inf-latency">42ms</span>
+          </div>
+          <div class="flex-between text-sm text-muted mt-16" style="margin-top:6px;">
+            <span>GPU utilization</span>
+            <span class="mono text-accent" id="gpu-util">67%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">Live Telemetry Stream</div>
+      <div class="mono text-sm text-accent" id="stream-time">00:00:00</div>
+    </div>
+    <canvas id="telemetry-chart" width="900" height="120" style="width:100%;border-radius:8px;background:var(--bg3);"></canvas>
+    <div style="display:flex;gap:20px;margin-top:10px;font-size:12px;">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Speed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Object Count</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Alert Level</div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="panel">
+      <div class="panel-title mb-8">Route Filter</div>
+      <select class="input mb-8"><option>All Routes</option><option>A9 Munich</option><option>A5 Frankfurt</option><option>Ring Warsaw</option></select>
+      <div class="text-sm text-muted">Showing 4 vehicles on selected route</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title mb-8">Driver Feedback</div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label class="checkbox-row"><input type="checkbox" checked> ADAS intervention logged</label>
+        <label class="checkbox-row"><input type="checkbox"> Manual override</label>
+        <label class="checkbox-row"><input type="checkbox"> False alert dismissed</label>
+      </div>
+      <button class="btn btn-ghost w-full mt-16" style="margin-top:12px;">Submit Feedback</button>
+    </div>
+    <div class="panel">
+      <div class="panel-title mb-8">Network Status</div>
+      <div class="progress-row"><div class="progress-label">4G/5G Uplink</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:95%"></div></div><div class="progress-val">95%</div></div>
+      <div class="progress-row"><div class="progress-label">Data Rate</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:72%"></div></div><div class="progress-val">72MB/s</div></div>
+      <div class="progress-row"><div class="progress-label">Packet Loss</div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:2%;background:var(--red)"></div></div><div class="progress-val">0.2%</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     PAGE 8: EXPLAINABILITY
+     ============================ -->
+<div class="page" id="page-explainability">
+  <div class="section-header">
+    <div class="section-title">Model Explainability & Interpretability</div>
+    <div class="section-sub">Visualize model decisions for safety validation</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Saliency Map — Camera Input</div>
+        <select class="input" style="width:auto;font-size:12px;padding:4px 8px;">
+          <option>Grad-CAM</option>
+          <option>LIME</option>
+          <option>SHAP</option>
+          <option>Integrated Gradients</option>
+        </select>
+      </div>
+      <canvas id="saliency-canvas" width="500" height="250" style="width:100%;border-radius:8px;"></canvas>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);">
+        <div style="flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#000080,#0000ff,#00ffff,#ffff00,#ff0000)"></div>
+        Low → High activation
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Feature Importance — Pedestrian Detection</div>
+      </div>
+      <div class="feature-importance">
+        <div class="fi-row"><div class="fi-label">Edge Sharpness</div><div class="fi-bar-bg"><div class="fi-bar" style="width:92%;background:var(--red)"></div></div><div class="fi-val">0.92</div></div>
+        <div class="fi-row"><div class="fi-label">Human Silhouette</div><div class="fi-bar-bg"><div class="fi-bar" style="width:88%;background:var(--red)"></div></div><div class="fi-val">0.88</div></div>
+        <div class="fi-row"><div class="fi-label">Motion Vector</div><div class="fi-bar-bg"><div class="fi-bar" style="width:74%;background:var(--yellow)"></div></div><div class="fi-val">0.74</div></div>
+        <div class="fi-row"><div class="fi-label">Depth Estimate</div><div class="fi-bar-bg"><div class="fi-bar" style="width:68%;background:var(--yellow)"></div></div><div class="fi-val">0.68</div></div>
+        <div class="fi-row"><div class="fi-label">Color Profile</div><div class="fi-bar-bg"><div class="fi-bar" style="width:52%;background:var(--accent)"></div></div><div class="fi-val">0.52</div></div>
+        <div class="fi-row"><div class="fi-label">Texture Pattern</div><div class="fi-bar-bg"><div class="fi-bar" style="width:41%;background:var(--accent)"></div></div><div class="fi-val">0.41</div></div>
+        <div class="fi-row"><div class="fi-label">Context (Road)</div><div class="fi-bar-bg"><div class="fi-bar" style="width:33%;background:var(--accent3)"></div></div><div class="fi-val">0.33</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Ground Truth vs Prediction</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div class="text-sm text-muted mb-8">Ground Truth</div>
+          <canvas id="gt-canvas" width="240" height="160" style="width:100%;border-radius:8px;background:#0a0f1a;border:2px solid var(--accent3)"></canvas>
+        </div>
+        <div>
+          <div class="text-sm text-muted mb-8">Model Prediction</div>
+          <canvas id="pred-canvas" width="240" height="160" style="width:100%;border-radius:8px;background:#0a0f1a;border:2px solid var(--accent)"></canvas>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">
+        <div class="flex-between text-sm"><span class="text-muted">IoU Score</span><span class="mono text-accent">0.87</span></div>
+        <div class="flex-between text-sm mt-16" style="margin-top:6px;"><span class="text-muted">Confidence</span><span class="mono text-accent">0.94</span></div>
+        <div class="flex-between text-sm mt-16" style="margin-top:6px;"><span class="text-muted">Class Match</span><span class="mono" style="color:var(--accent3)">✓ Correct</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Decision Logic Tree</div>
+      </div>
+      <div style="font-family:JetBrains Mono;font-size:11px;color:var(--text2);line-height:2;background:var(--bg3);padding:14px;border-radius:8px;border:1px solid var(--border);">
+        <div style="color:var(--accent)">IF confidence &gt; 0.60:</div>
+        <div style="padding-left:16px;color:var(--accent3)">IF class == "pedestrian":</div>
+        <div style="padding-left:32px;">→ Check distance &lt; 50m</div>
+        <div style="padding-left:48px;color:var(--yellow)">→ IF distance &lt; 20m: <span style="color:var(--red)">BRAKE</span></div>
+        <div style="padding-left:48px;">→ IF distance 20-50m: <span style="color:var(--yellow)">WARN</span></div>
+        <div style="padding-left:16px;color:var(--accent3)">IF class == "vehicle":</div>
+        <div style="padding-left:32px;">→ Compute TTC</div>
+        <div style="padding-left:48px;color:var(--yellow)">→ IF TTC &lt; 2.5s: <span style="color:var(--red)">BRAKE</span></div>
+        <div style="padding-left:48px;">→ IF TTC &lt; 5.0s: <span style="color:var(--yellow)">WARN</span></div>
+        <div style="color:var(--text3)">ELSE: confidence too low → ignore</div>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn btn-ghost w-full" style="font-size:12px;">Export Decision Rules</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+// ==============================
+// PAGE NAVIGATION
+// ==============================
+const pages = {
+  dashboard: { title: 'PERFORMANCE DASHBOARD', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / Overview' },
+  annotation: { title: 'ANNOTATION TOOL', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / Dataset' },
+  models: { title: 'MODEL MONITOR', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / ML Models' },
+  incidents: { title: 'INCIDENT ANALYZER', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / Incidents' },
+  simulation: { title: 'SIMULATION HUB', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / Simulation' },
+  compliance: { title: 'COMPLIANCE DASHBOARD', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / Regulatory' },
+  telemetry: { title: 'LIVE TELEMETRY', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / Telemetry' },
+  explainability: { title: 'EXPLAINABILITY', breadcrumb: 'Mercedes-Benz Trucks / ADAS Platform / XAI' },
+};
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('page-title').textContent = pages[id].title;
+  document.getElementById('page-breadcrumb').textContent = pages[id].breadcrumb;
+}
+
+// ==============================
+// DASHBOARD — CHART
+// ==============================
+function buildDetectionChart() {
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const vals = [4200, 5800, 5100, 6700, 7200, 4900, 6100];
+  const max = Math.max(...vals);
+  const container = document.getElementById('detection-chart');
+  if(!container) return;
+  container.innerHTML = vals.map((v,i) => `
+    <div class="bar-wrap">
+      <div class="bar" style="height:${(v/max)*100}%;background:linear-gradient(to top, #0066cc, #00a8e8);"></div>
+      <div class="bar-label">${days[i]}</div>
+    </div>
+  `).join('');
+}
+
+// ==============================
+// DASHBOARD — HEATMAP
+// ==============================
+function buildHeatmap() {
+  const grid = document.getElementById('heatmap-grid');
+  if(!grid) return;
+  const colors = ['#0a1a2a','#0a2a4a','#0044aa','#0066cc','#00a8e8','#f5c842','#ff8c00','#ff3b5c'];
+  let html = '';
+  for(let r=0; r<7; r++) {
+    for(let c=0; c<12; c++) {
+      const idx = Math.floor(Math.random()*colors.length);
+      html += `<div class="heatmap-cell" style="background:${colors[idx]}" title="Sector ${r*12+c+1}: ${Math.floor(Math.random()*100)} incidents"></div>`;
+    }
+  }
+  grid.innerHTML = html;
+}
+
+// ==============================
+// DASHBOARD — CONFUSION MATRIX
+// ==============================
+function buildConfusionMatrix() {
+  const labels = ['Veh','Ped','Cyc','Lane','Obs'];
+  const data = [
+    [94,2,1,0,3],
+    [3,91,2,1,3],
+    [2,3,88,2,5],
+    [0,0,1,97,2],
+    [4,2,3,1,90],
+  ];
+  const cm = document.getElementById('confusion-matrix');
+  if(!cm) return;
+  let html = '<div></div>' + labels.map(l=>`<div class="cm-cell" style="font-size:10px;color:var(--text3)">${l}</div>`).join('');
+  data.forEach((row,i)=>{
+    html += `<div class="cm-cell" style="font-size:10px;color:var(--text3)">${labels[i]}</div>`;
+    row.forEach((v,j)=>{
+      const isDiag = i===j;
+      const alpha = v/100;
+      const bg = isDiag ? `rgba(0,168,232,${alpha})` : v > 5 ? `rgba(255,59,92,${alpha})` : `rgba(30,45,71,${alpha})`;
+      html += `<div class="cm-cell" style="background:${bg};color:${isDiag?'#fff':'var(--text2)'}">${v}</div>`;
+    });
+  });
+  cm.innerHTML = html;
+}
+
+// ==============================
+// ANNOTATION TOOL
+// ==============================
+const canvas = document.getElementById('annotation-canvas');
+const ctx = canvas ? canvas.getContext('2d') : null;
+let annotations = [];
+let drawing = false;
+let startX, startY;
+let currentClass = 'vehicle';
+let currentColor = '#00a8e8';
+let bgImage = null;
+
+function selectClass(el, cls, color) {
+  document.querySelectorAll('.scenario-chip').forEach(c => {
+    if(c.closest('#page-annotation')) c.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  currentClass = cls;
+  currentColor = color;
+}
+
+function loadAnnotationImage(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      bgImage = img;
+      document.getElementById('upload-overlay').style.display = 'none';
+      canvas.width = img.width;
+      canvas.height = img.height;
+      redrawCanvas();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function redrawCanvas() {
+  if(!ctx) return;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(bgImage) {
+    ctx.drawImage(bgImage,0,0,canvas.width,canvas.height);
+  } else {
+    ctx.fillStyle = '#0d1221';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  annotations.forEach(a => {
+    ctx.strokeStyle = a.color;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(a.x, a.y, a.w, a.h);
+    ctx.fillStyle = a.color + '33';
+    ctx.fillRect(a.x, a.y, a.w, a.h);
+    ctx.fillStyle = a.color;
+    ctx.font = 'bold 12px JetBrains Mono, monospace';
+    ctx.fillRect(a.x, a.y - 18, ctx.measureText(a.cls).width + 8, 18);
+    ctx.fillStyle = '#000';
+    ctx.fillText(a.cls, a.x + 4, a.y - 4);
+  });
+}
+
+if(canvas) {
+  canvas.addEventListener('mousedown', e => {
+    if(!document.getElementById('upload-overlay').style.display) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    startX = (e.clientX - rect.left) * scaleX;
+    startY = (e.clientY - rect.top) * scaleY;
+    drawing = true;
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if(!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    redrawCanvas();
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5,3]);
+    ctx.strokeRect(startX, startY, mx-startX, my-startY);
+    ctx.setLineDash([]);
+  });
+
+  canvas.addEventListener('mouseup', e => {
+    if(!drawing) return;
+    drawing = false;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const endX = (e.clientX - rect.left) * scaleX;
+    const endY = (e.clientY - rect.top) * scaleY;
+    const w = endX - startX;
+    const h = endY - startY;
+    if(Math.abs(w) > 10 && Math.abs(h) > 10) {
+      annotations.push({ cls: currentClass, color: currentColor, x: startX, y: startY, w, h });
+      updateAnnotationList();
+      redrawCanvas();
+    }
+  });
+}
+
+function updateAnnotationList() {
+  const list = document.getElementById('annotation-list');
+  const count = document.getElementById('ann-count');
+  if(!list) return;
+  count.textContent = annotations.length;
+  if(annotations.length === 0) {
+    list.innerHTML = '<div class="flex-center" style="height:80px;color:var(--text3);font-size:13px;">No annotations yet</div>';
+    return;
+  }
+  list.innerHTML = annotations.map((a,i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:var(--bg3);border-radius:6px;margin-bottom:6px;border-left:3px solid ${a.color}">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${a.cls}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:JetBrains Mono">${Math.round(a.w)}×${Math.round(a.h)}</div>
+      </div>
+      <div onclick="deleteAnnotation(${i})" style="cursor:pointer;color:var(--red);font-size:16px;">×</div>
+    </div>
+  `).join('');
+}
+
+function deleteAnnotation(i) {
+  annotations.splice(i,1);
+  updateAnnotationList();
+  redrawCanvas();
+}
+
+function clearAnnotations() {
+  annotations = [];
+  updateAnnotationList();
+  redrawCanvas();
+}
+
+function saveAnnotations() {
+  const data = JSON.stringify({ annotations, format:'COCO', timestamp: new Date().toISOString() }, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'annotations.json'; a.click();
+}
+
+// Demo: draw on canvas immediately
+setTimeout(() => {
+  if(ctx && !bgImage) {
+    canvas.width = 600; canvas.height = 300;
+    ctx.fillStyle = '#0a0f1a';
+    ctx.fillRect(0,0,600,300);
+    // Road
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0,150,600,150);
+    // Lane lines
+    ctx.strokeStyle = '#f5c842';
+    ctx.setLineDash([20,15]);
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(300,150); ctx.lineTo(300,300); ctx.stroke();
+    ctx.setLineDash([]);
+    // Sky gradient
+    const sky = ctx.createLinearGradient(0,0,0,150);
+    sky.addColorStop(0,'#050a1a');
+    sky.addColorStop(1,'#0d1a3a');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,600,150);
+    // Truck silhouette
+    ctx.fillStyle = '#223344';
+    ctx.fillRect(220,80,160,80);
+    ctx.fillStyle = '#334455';
+    ctx.fillRect(350,100,60,60);
+    // Wheels
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.arc(260,160,15,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(340,160,15,0,Math.PI*2); ctx.fill();
+    // Instructions
+    ctx.fillStyle = 'rgba(0,168,232,0.7)';
+    ctx.font = '14px JetBrains Mono, monospace';
+    ctx.fillText('← Upload an image to annotate, or draw boxes on this demo', 20, 280);
+  }
+}, 100);
+
+// ==============================
+// SIMULATION
+// ==============================
+let simRunning = true;
+let simInterval;
+let simTime = 0;
+const vehicles = [
+  { x: 200, y: 100, w: 40, h: 70, speed: 0.5, lane: 'left' },
+  { x: 350, y: 50, w: 36, h: 60, speed: 0.3, lane: 'right' },
+];
+let ped = null;
+
+function renderSimulation() {
+  const road = document.getElementById('sim-road');
+  if(!road) return;
+  // Remove old vehicles
+  road.querySelectorAll('.sim-vehicle,.detection-box').forEach(e => e.remove());
+
+  // Ego vehicle
+  const ego = document.createElement('div');
+  ego.className = 'sim-vehicle sim-ego';
+  ego.style.cssText = `left:${road.offsetWidth/2-20}px;top:${road.offsetHeight-90}px;`;
+  road.appendChild(ego);
+
+  // Other vehicles
+  vehicles.forEach((v,i) => {
+    const el = document.createElement('div');
+    el.className = 'sim-vehicle sim-other';
+    el.style.cssText = `left:${v.x}px;top:${v.y}px;width:${v.w}px;height:${v.h}px;`;
+    road.appendChild(el);
+
+    const box = document.createElement('div');
+    box.className = 'detection-box';
+    box.style.cssText = `left:${v.x-4}px;top:${v.y-4}px;width:${v.w+8}px;height:${v.h+8}px;`;
+    const label = document.createElement('div');
+    label.className = 'detection-label';
+    label.textContent = `Vehicle ${(0.9+Math.random()*0.09).toFixed(2)}`;
+    box.appendChild(label);
+    road.appendChild(box);
+  });
+
+  if(ped) {
+    const el = document.createElement('div');
+    el.className = 'sim-vehicle sim-pedestrian';
+    el.style.cssText = `left:${ped.x}px;top:${ped.y}px;`;
+    road.appendChild(el);
+    const box = document.createElement('div');
+    box.className = 'detection-box';
+    box.style.cssText = `left:${ped.x-4}px;top:${ped.y-4}px;width:24px;height:36px;border-color:var(--red);`;
+    const label = document.createElement('div');
+    label.className = 'detection-label';
+    label.style.background = 'rgba(255,59,92,0.9)';
+    label.textContent = `Ped 0.88`;
+    box.appendChild(label);
+    road.appendChild(box);
+    ped.x += 0.8;
+    if(ped.x > road.offsetWidth) ped = null;
+  }
+}
+
+function animateSimulation() {
+  if(!simRunning) return;
+  simTime++;
+  vehicles.forEach(v => {
+    v.y += v.speed * 2;
+    if(v.y > 320) v.y = -80;
+  });
+  if(simTime % 50 === 0) {
+    const speed = 55 + Math.floor(Math.random()*20);
+    const ttc = (3+Math.random()*3).toFixed(1);
+    document.getElementById('sim-speed').textContent = speed;
+    document.getElementById('sim-ttc').textContent = ttc;
+    document.getElementById('sim-objects').textContent = vehicles.length + (ped?1:0);
+  }
+  renderSimulation();
+  drawDetectionCanvas();
+}
+
+function drawDetectionCanvas() {
+  const dc = document.getElementById('detection-canvas');
+  if(!dc) return;
+  const dctx = dc.getContext('2d');
+  dctx.fillStyle = '#0a0f1a';
+  dctx.fillRect(0,0,dc.width,dc.height);
+  // Grid
+  dctx.strokeStyle = 'rgba(0,168,232,0.08)';
+  for(let i=0;i<dc.width;i+=40){dctx.beginPath();dctx.moveTo(i,0);dctx.lineTo(i,dc.height);dctx.stroke();}
+  for(let j=0;j<dc.height;j+=40){dctx.beginPath();dctx.moveTo(0,j);dctx.lineTo(dc.width,j);dctx.stroke();}
+  // Lane
+  dctx.strokeStyle = '#f5c84280';
+  dctx.setLineDash([10,8]);
+  dctx.lineWidth = 2;
+  dctx.beginPath(); dctx.moveTo(dc.width/2,0); dctx.lineTo(dc.width/2,dc.height); dctx.stroke();
+  dctx.setLineDash([]);
+  // Vehicles
+  vehicles.forEach(v => {
+    const sx = (v.x / 500) * dc.width;
+    const sy = (v.y / 300) * dc.height;
+    dctx.strokeStyle = '#00a8e8';
+    dctx.lineWidth = 1.5;
+    dctx.strokeRect(sx-18,sy-25,36,50);
+    dctx.fillStyle = 'rgba(0,168,232,0.1)';
+    dctx.fillRect(sx-18,sy-25,36,50);
+    dctx.fillStyle = '#00a8e8';
+    dctx.font = '9px JetBrains Mono';
+    dctx.fillText('VEH', sx-10, sy-30);
+  });
+  // Ego
+  dctx.fillStyle = '#0066cc';
+  dctx.fillRect(dc.width/2-12, dc.height-45, 24, 40);
+  // Scan arc
+  const egoCX = dc.width/2;
+  const egoCY = dc.height-25;
+  dctx.strokeStyle = 'rgba(0,168,232,0.2)';
+  dctx.lineWidth = 1;
+  for(let r=50;r<=180;r+=50){
+    dctx.beginPath();
+    dctx.arc(egoCX,egoCY,r,Math.PI*1.2,Math.PI*1.8);
+    dctx.stroke();
+  }
+}
+
+function toggleSimulation() {
+  simRunning = !simRunning;
+  const btn = document.getElementById('sim-pause-btn');
+  btn.textContent = simRunning ? '⏸ Pause' : '▶ Resume';
+}
+
+function resetSimulation() {
+  vehicles[0].y = 100; vehicles[1].y = 50; ped = null;
+}
+
+function changeScenario(val) {
+  console.log('Scenario changed to:', val);
+}
+
+function toggleHazard(type, active) {
+  if(type === 'pedestrian' && active) {
+    ped = { x: 100, y: 150 };
+  }
+  document.getElementById('sim-alerts').textContent = active ? '1' : '0';
+}
+
+setInterval(animateSimulation, 50);
+
+// ==============================
+// TELEMETRY CHART
+// ==============================
+let teleData = {speed:[], objects:[], alerts:[]};
+let teleTime = 0;
+let streamSec = 0;
+
+function updateTelemetry() {
+  teleTime++;
+  const speed = 58+Math.sin(teleTime/20)*8+Math.random()*4;
+  const objs = 2+Math.floor(Math.random()*4);
+  const alert = Math.random() < 0.05 ? 1 : 0;
+  teleData.speed.push(speed);
+  teleData.objects.push(objs*10);
+  teleData.alerts.push(alert*50);
+  if(teleData.speed.length > 80) { teleData.speed.shift(); teleData.objects.shift(); teleData.alerts.shift(); }
+
+  document.getElementById('tele-speed').textContent = Math.round(speed)+' km/h';
+  document.getElementById('inf-latency').textContent = (38+Math.floor(Math.random()*10))+'ms';
+  document.getElementById('gpu-util').textContent = (60+Math.floor(Math.random()*20))+'%';
+
+  streamSec++;
+  const h = String(Math.floor(streamSec/3600)).padStart(2,'0');
+  const m = String(Math.floor(streamSec/60)%60).padStart(2,'0');
+  const s = String(streamSec%60).padStart(2,'0');
+  const st = document.getElementById('stream-time');
+  if(st) st.textContent = `${h}:${m}:${s}`;
+
+  drawTelemetryChart();
+}
+
+function drawTelemetryChart() {
+  const tc = document.getElementById('telemetry-chart');
+  if(!tc) return;
+  const tctx = tc.getContext('2d');
+  const W = tc.width, H = tc.height;
+  tctx.fillStyle = '#111827';
+  tctx.fillRect(0,0,W,H);
+  // Grid
+  tctx.strokeStyle = 'rgba(30,45,71,0.6)';
+  tctx.lineWidth = 1;
+  for(let i=0;i<H;i+=30){tctx.beginPath();tctx.moveTo(0,i);tctx.lineTo(W,i);tctx.stroke();}
+
+  function drawLine(data, color, maxVal) {
+    if(data.length < 2) return;
+    tctx.beginPath();
+    tctx.strokeStyle = color;
+    tctx.lineWidth = 2;
+    data.forEach((v,i) => {
+      const x = (i/(data.length-1))*W;
+      const y = H - (v/maxVal)*H;
+      i===0 ? tctx.moveTo(x,y) : tctx.lineTo(x,y);
+    });
+    tctx.stroke();
+    // Fill
+    tctx.lineTo(W,H); tctx.lineTo(0,H); tctx.closePath();
+    tctx.fillStyle = color.replace(')',',0.07)').replace('rgb','rgba').replace('#00a8e8','rgba(0,168,232,');
+    tctx.fill();
+  }
+
+  drawLine(teleData.speed, '#00a8e8', 100);
+  drawLine(teleData.objects, '#00e5b0', 100);
+  drawLine(teleData.alerts, '#ff3b5c', 100);
+}
+
+setInterval(updateTelemetry, 500);
+
+// ==============================
+// SALIENCY MAP (Grad-CAM demo)
+// ==============================
+function drawSaliencyMap() {
+  const sc = document.getElementById('saliency-canvas');
+  if(!sc) return;
+  const sctx = sc.getContext('2d');
+  const W = sc.width, H = sc.height;
+
+  // Background scene
+  sctx.fillStyle = '#0a0f1a';
+  sctx.fillRect(0,0,W,H);
+  // Road
+  sctx.fillStyle = '#1a1a2e';
+  sctx.fillRect(0,H*0.5,W,H*0.5);
+  sctx.strokeStyle = '#f5c84260';
+  sctx.setLineDash([15,12]);
+  sctx.beginPath();sctx.moveTo(W/2,H*0.5);sctx.lineTo(W/2,H);sctx.stroke();
+  sctx.setLineDash([]);
+  // Person shape
+  sctx.fillStyle = '#334';
+  sctx.beginPath();sctx.arc(W*0.35,H*0.35,18,0,Math.PI*2);sctx.fill();
+  sctx.fillRect(W*0.35-10,H*0.5-5,20,40);
+
+  // Saliency overlay
+  const hotspots = [
+    {x:W*0.35, y:H*0.42, r:60, intensity:'high'},
+    {x:W*0.35, y:H*0.65, r:40, intensity:'medium'},
+    {x:W*0.6, y:H*0.3, r:30, intensity:'low'},
+  ];
+
+  hotspots.forEach(h => {
+    const grad = sctx.createRadialGradient(h.x,h.y,0,h.x,h.y,h.r);
+    if(h.intensity==='high') {
+      grad.addColorStop(0,'rgba(255,0,0,0.7)');
+      grad.addColorStop(0.4,'rgba(255,165,0,0.4)');
+      grad.addColorStop(0.8,'rgba(255,255,0,0.15)');
+      grad.addColorStop(1,'transparent');
+    } else if(h.intensity==='medium') {
+      grad.addColorStop(0,'rgba(255,165,0,0.5)');
+      grad.addColorStop(0.5,'rgba(255,255,0,0.2)');
+      grad.addColorStop(1,'transparent');
+    } else {
+      grad.addColorStop(0,'rgba(0,0,255,0.3)');
+      grad.addColorStop(1,'transparent');
+    }
+    sctx.fillStyle = grad;
+    sctx.beginPath();sctx.arc(h.x,h.y,h.r,0,Math.PI*2);sctx.fill();
+  });
+
+  // Label
+  sctx.fillStyle = 'rgba(255,59,92,0.9)';
+  sctx.fillRect(W*0.35-35,H*0.15,90,20);
+  sctx.fillStyle = '#fff';
+  sctx.font = '11px JetBrains Mono';
+  sctx.fillText('pedestrian 0.94', W*0.35-33, H*0.15+13);
+}
+
+// GT and Pred canvases
+function drawComparisonCanvases() {
+  ['gt-canvas','pred-canvas'].forEach((id,isPred) => {
+    const c = document.getElementById(id);
+    if(!c) return;
+    const cx = c.getContext('2d');
+    cx.fillStyle = '#0a0f1a';
+    cx.fillRect(0,0,c.width,c.height);
+    // Simple scene
+    cx.fillStyle = '#1a2030';
+    cx.fillRect(0,c.height*0.5,c.width,c.height);
+    cx.strokeStyle = isPred ? '#00a8e8' : '#00e5b0';
+    cx.lineWidth = 2;
+    // Slightly offset for pred
+    const offset = isPred ? 5 : 0;
+    cx.strokeRect(80+offset,40+offset,80-offset*2,100-offset*2);
+    cx.fillStyle = cx.strokeStyle + '22';
+    cx.fillRect(80+offset,40+offset,80-offset*2,100-offset*2);
+    cx.font = 'bold 11px JetBrains Mono';
+    cx.fillStyle = cx.strokeStyle;
+    cx.fillText('pedestrian', 82+offset, 36+offset);
+  });
+}
+
+setTimeout(() => {
+  drawSaliencyMap();
+  drawComparisonCanvases();
+}, 300);
+
+// ==============================
+// INIT
+// ==============================
+buildDetectionChart();
+buildHeatmap();
+buildConfusionMatrix();
+
+// Update last update time
+setInterval(() => {
+  const el = document.getElementById('last-update');
+  if(el) el.textContent = new Date().toLocaleTimeString();
+}, 1000);
+
+// Scenario chips (non-annotation pages)
+document.querySelectorAll('.scenario-chip').forEach(chip => {
+  if(!chip.closest('#page-annotation')) {
+    chip.addEventListener('click', function() {
+      this.classList.toggle('selected');
+    });
+  }
+});
+</script>
+</body>
+</html>

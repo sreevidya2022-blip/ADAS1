@@ -21,4 +21,4 @@ RUN mkdir -p uploads
 
 # Start Gunicorn using Railway's dynamic port
 # We use 'sh -c' to make sure the $PORT variable is read correctly at runtime
-CMD ["sh", "-c", "gunicorn -w 4 -b 0.0.0.0:$PORT --timeout 120 --access-logfile - --error-logfile - backend_api:app"]
+CMD ["sh", "-c", "gunicorn -w 4 -b 0.0.0.0:$PORT backend_api:app"]

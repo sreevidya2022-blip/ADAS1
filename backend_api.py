@@ -12,12 +12,23 @@ from PIL import Image
 import logging
 from collections import defaultdict
 import statistics
+import httpx
 
-# Groq AI Integration
-try:
-    from groq import Groq
-except ImportError:
-    Groq = None
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
+
+def analyze_with_groq(query):
+    if not GROQ_API_KEY:
+        return {"error": "Groq API not configured"}
+    try:
+        resp = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_API_KEY}"},
+            json={"model": "mixtral-8x7b-32768", "messages": [{"role":"user","content":f"Analyze this ADAS scenario: {query}"}], "max_tokens": 500},
+            timeout=30
+        )
+        return {"analysis": resp.json()["choices"][0]["message"]["content"]}
+    except Exception as e:
+        return {"error": str(e)}
 
 app = Flask(__name__)
 CORS(app)

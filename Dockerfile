@@ -5,10 +5,11 @@ WORKDIR /app
 
 # Install system dependencies
 # Added libgl1 and libglib2.0-0 for OpenCV (cv2) compatibility 
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
